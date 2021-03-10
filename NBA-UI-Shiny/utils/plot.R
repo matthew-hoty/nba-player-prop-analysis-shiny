@@ -9,43 +9,39 @@ library(grid)
 library(ggrepel)
 library(dplyr)
 
-
-generate_timeSeriesPlot_old <- function(df){
-  tsPlot <- ggplot(df, aes(x = dateGame, y = target)) +
-     geom_point() + 
-     geom_line() + 
-     geom_hline(aes(yintercept = currentHandicap)) + 
-     geom_hline(aes(yintercept = avg_target), color = 'red', linetype = "dashed") + 
-     #geom_label(aes(label=paste(pts,slugOppLoc)),vjust="inward",hjust="inward") + 
-     geom_label_repel(aes(label=paste(target,slugOppLoc))) + 
-     theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) + 
-     theme_light()
-  return(tsPlot)
-}
-
 generate_timeSeriesPlot <- function(df){
   scale_max = max(df$target, na.rm = T) * 1.1
   tsPlot <- ggplot(df, aes(x = dateGame, y = target)) +
-    geom_point() + 
-    geom_line() + 
-    geom_hline(aes(yintercept = currentHandicap)) + 
-    geom_hline(aes(yintercept = avg_target), color = 'red', linetype = "dashed") + 
+    geom_point(size = 2) + 
+    geom_line(size = .25) + 
+    
+    geom_hline(aes(yintercept = currentHandicap,linetype = "Target", color = 'Target')) + 
+
+    geom_hline(aes(yintercept = avg_target,linetype = "Avg", color = "Avg")) + 
+    
     geom_label_repel(aes(label=paste(target,slugOppLoc))) + 
 
     #Themes
     theme_light() + 
-    #theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) + 
-    theme(panel.grid.major.x = element_blank(),
+    theme(#panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank(),
           panel.grid.minor.y = element_blank()
           ) +  # remove vertial gridlines
-    scale_y_continuous(breaks=seq(0,scale_max,5),
-                       limits=c(0, scale_max)  
-    ) + #limits=c(0, scale_max)) + 
-
+    theme(legend.position="top",
+          legend.justification="right",
+          legend.margin=margin(0,0,0,0),
+          legend.box.margin=margin(-10,0,-10,-10)) + 
+    
+    theme(text=element_text(family="Helvetica")) + 
+    
+    scale_linetype_manual(values = c("Avg" = "dashed","Target" = "solid")) +
+    scale_color_manual(values = c("Avg" = "darkgreen","Target" = "black")) +
     # Axis Labels
-    xlab("Date") + 
-    ylab("")
+    labs(x = "",
+         y = "",
+         linetype = NULL,
+         color = NULL) 
+  
   return(tsPlot)
 }
 
@@ -59,7 +55,9 @@ generate_playerHeadshot <- function(url){
 
 generate_plotTitle <- function(playerName, marketName){
   title_str <- paste(playerName,marketName)
-  title_f <- textGrob(title_str, gp = gpar(fontsize = 15, fontface = 'bold'),x=0, hjust=-.1)
+  title_f <- textGrob(title_str, 
+                      gp = gpar(fontsize = 15, fontface = 'bold',fontfamily = "Helvetica"),
+                      x=0, hjust=-.05)
   return(title_f)
 }
 

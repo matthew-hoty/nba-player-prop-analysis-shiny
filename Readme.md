@@ -14,4 +14,4 @@ This Shiny app provided a quick way to do analysis on FanDuel player props for t
 ### Setup 
 * R version 4.0.3 
 
-### Run Shiny
+
