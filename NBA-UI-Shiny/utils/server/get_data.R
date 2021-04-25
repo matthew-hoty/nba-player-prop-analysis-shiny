@@ -7,6 +7,7 @@ library(aws.s3)
 library(lubridate)
 library(httr)
 library(jsonlite)
+library(purrr)
 
 Sys.setenv("AWS_PROFILE" = "cli")
 Sys.setenv("DATA_BUCKET" = 'scraper-prod-269350797537')
@@ -15,10 +16,14 @@ get_latest_fanduel_file <- function(){
   bucket = Sys.getenv('DATA_BUCKET')
   bucket_contents = get_bucket(bucket = bucket)
   bucket_df <- unstack(data.frame(d<-unlist(bucket_contents),sub(".*[.]","",names(d))))
-  key <- bucket_df$Key[which.max(parse_date_time(bucket_df$LastModified,"Ymd HMS"))]
   
-  key <- 'Daily_Downloads/wagers_2021_03_04.csv'
-  
+  key <- bucket_df %>%
+    filter(str_detect(Key,"^nba/")) %>%
+    filter(str_detect(Key,'selection')) %>%
+    filter(LastModified == max(LastModified)) %>%
+    select(Key) %>%
+    unlist()
+
   df <- s3read_using(FUN=read.csv, bucket = bucket, object = key ) 
   return(df)
 }
@@ -90,11 +95,24 @@ get_player_data <- function(){
   df <- data.frame(response$rowSet[[1]])    
   colnames(df) <- response$headers[[1]]
   
-  df$HEIGHT 
-  sapply(strsplit(df$HEIGHT,"-"), function(x){
-    as.numeric(x[[1]]) + as.numeric(x[[2]])
-    #as.character(as.numeric(x[[1]]) + as.numeric(x[[2]]) / 12)
+  df$HEIGHT <- sapply(strsplit(df$HEIGHT,"-"), function(x){
+    (as.numeric(x[1])*12) + as.numeric(x[2])
   })
+  
+  new_df <- df %>% 
+    mutate(namePlayer = paste(PLAYER_FIRST_NAME,PLAYER_LAST_NAME),
+           idPlayer = as.double(PERSON_ID),
+           idTeam = as.double(TEAM_ID)
+           ) %>%
+    select(namePlayer,
+           idPlayer,
+           idTeam,
+           slugTeam = TEAM_ABBREVIATION,
+           position = POSITION,
+           height = HEIGHT,
+           weight = WEIGHT)
+  
+  return(new_df)
   
 }
 
@@ -104,7 +122,8 @@ get_todays_data <- function(){
     list(
       wagers_df = get_latest_fanduel_file(),
       game_logs_df = get_boxscores(), #game_logs(seasons = 2020:2021),
-      schedule_df = get_schedule()
+      schedule_df = get_schedule(),
+      player_df = get_player_data()
     )
   )  
 }

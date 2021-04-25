@@ -12,13 +12,18 @@ library(dplyr)
 generate_timeSeriesPlot <- function(df){
   scale_max = max(df$target, na.rm = T) * 1.1
   tsPlot <- ggplot(df, aes(x = dateGame, y = target)) +
+    # Actuals
     geom_point(size = 2) + 
     geom_line(size = .25) + 
     
+    #Target
     geom_hline(aes(yintercept = currentHandicap,linetype = "Target", color = 'Target')) + 
-
-    geom_hline(aes(yintercept = avg_target,linetype = "Avg", color = "Avg")) + 
     
+    #Avg
+    geom_hline(aes(yintercept = avg_target,linetype = "Avg", color = "Avg")) +
+    geom_ribbon(aes(ymin=avg_target - sd_target, ymax=avg_target + sd_target, linetype = 'Avg' ), alpha = 0.1)+
+
+    #Labels
     geom_label_repel(aes(label=paste(target,slugOppLoc))) + 
 
     #Themes
@@ -53,21 +58,28 @@ generate_playerHeadshot <- function(url){
   
 }
 
-generate_plotTitle <- function(playerName, marketName){
-  title_str <- paste(playerName,marketName)
+generate_plotTitle <- function(playerName, marketName, marketDesc){
+  #title_str <- paste(playerName,marketName)
+  title_str <- marketDesc
   title_f <- textGrob(title_str, 
                       gp = gpar(fontsize = 15, fontface = 'bold',fontfamily = "Helvetica"),
                       x=0, hjust=-.05)
   return(title_f)
 }
 
-generate_summaryTable <- function(df){
+
+#df <- player_summary_df
+generate_summaryTable <- function(df, player_schedule_df){
   summary_tbl <- df %>%
+    left_join(player_schedule_df, by = c('namePlayer' = 'namePlayer', 'gameStartDate' = 'gameStartDate')) %>%
+    mutate(today_slugOppLoc = case_when( locationGame == 'H' ~ paste('v.',slugTeamOpp),
+                                         locationGame == 'A' ~ paste('@', slugTeamOpp))
+           ) %>%
     group_by(namePlayer) %>%
     summarise(Odds = ifelse(mean(value) > 0, paste("+",mean(value),sep=''),mean(value)),
-              `Matchup` = 'TBD', #paste(strwrap(first(gameDesc), width = 200),  collapse="\n"), #strwrap(first(gameDesc), width = 10, simplify = FALSE),
-              `Avg L10` = mean(target),
-              `Max L10` = max(target, na.rm = T)) %>%
+              `Matchup` = first(today_slugOppLoc), #paste(strwrap(first(gameDesc), width = 200),  collapse="\n"), #strwrap(first(gameDesc), width = 10, simplify = FALSE),
+              `Avg L10` = round(mean(target),1),
+              `Max L10` = round(max(target, na.rm = T),1)) %>%
     select(-namePlayer) %>%
     t()
   
@@ -76,21 +88,24 @@ generate_summaryTable <- function(df){
   return(tbl)
 }
 
-generate_plots <- function(player_wager_df, breakdown_df,input_row=1){
+generate_plots <- function(player_prop_hist_df, edge_df,player_schedule_df, input_row=1){
   if(is.null(input_row) ){
     input_row = 1
   }
 
-  selected_row <- breakdown_df[input_row,]
-  player_summary_df <- player_wager_df %>%
-    filter(namePlayer %in% selected_row$Player) %>%
-    filter(marketName %in% selected_row$Wager) %>%
-    mutate(avg_target = mean(target))
+  selected_row <- edge_df[input_row,]
+  player_summary_df <- player_prop_hist_df %>%
+    filter(namePlayer %in% selected_row$Player &
+             marketName %in% selected_row$Wager &
+             marketDesc %in% selected_row$Market
+             ) %>%
+    mutate(avg_target = mean(target),
+           sd_target = sd(target))
   
-  summary_tbl <- generate_summaryTable(player_summary_df)
+  summary_tbl <- generate_summaryTable(player_summary_df, player_schedule_df)
   tsPlot <- generate_timeSeriesPlot(player_summary_df)
   playerHeadshotImg <- generate_playerHeadshot(player_summary_df$urlPlayerHeadshot[1])
-  title = generate_plotTitle(first(player_summary_df$namePlayer),first(player_summary_df$marketName))
+  title = generate_plotTitle(first(player_summary_df$namePlayer),first(player_summary_df$marketName), first(player_summary_df$marketDesc))
   
   layout <- rbind(c(1,3,3,3),
                   c(1,3,3,3),

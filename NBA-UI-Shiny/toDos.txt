@@ -1,12 +1,18 @@
 # TO Dos
 ## add variance to plot
 ## Get Next Opponets Stats
-## probabilty = f(success,recency)
-## clean uyp graph
-
-## Remove min / max?
+(DONE?) ## probabilty = f(success,recency)
+(DONE) ## clean up graph
 
 
 ## need to build a model to predict points, ast, treb, 3pm
 ## season avg of target var + l10 of target + home vs away +
 ## opp pos avg (per minute?)
+
+###### UI Elements to build ############
+## Parlay of the day
+## Lock
+## Darkhorse
+
+## Parlay Calc
+## Some UI elements that when given 3+ things, it can render a meansing

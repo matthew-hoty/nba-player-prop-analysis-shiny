@@ -8,24 +8,38 @@
 #
 
 library(shiny)
-source("utils/helpers.R")
-source('utils/plot.R')
+source("utils/server/helpers.R")
+source('utils/server/plots/plot.R')
 
 obj <- pred_wager_edge_df()
 edge_df <- obj$edge_df
 player_prop_hist_df <- obj$player_prop_hist_df
-#schedule <- obj$schedule_df
+#schedule_df <- obj$schedule_df
+#player_data <- obj$player_data
+player_schedule_df <- obj$player_schedule_df
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
     output$playerPlot <- renderPlot({
 
-        generate_plots(player_prop_hist_df, edge_df,input$edgeDF_rows_selected)
+        generate_plots(player_prop_hist_df, 
+                       edge_df,
+                       player_schedule_df,
+                       input$edgeDF_rows_selected)
     })
     
-    output$edgeDF <- DT::renderDataTable(
-        edge_df,
+    output$edgeDF <- DT::renderDataTable({
+        print(input$oddsRange)
+        edge_df %>%
+            filter(Odds >= input$oddsRange[1] & Odds <= input$oddsRange[2]) %>%
+            ungroup() %>%
+            select(`Market`,
+                    `Odds`, 
+                    `My Prob`,
+                    `House Prob`,
+                    `My Value`)
+        },
         selection = 'single'
     )
 
