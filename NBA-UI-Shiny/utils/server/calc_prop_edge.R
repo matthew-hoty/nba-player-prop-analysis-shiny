@@ -1,4 +1,6 @@
 #### Calculate Edge ####
+#df <- player_prop_hist_df
+
 calculate_edge <- function(df){
   edge_df <- df %>%
     group_by(marketName, namePlayer, marketDesc) %>%

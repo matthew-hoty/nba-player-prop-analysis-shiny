@@ -2,6 +2,16 @@ library(dplyr)
 
 
 #### Clean Wager Data ####
+clean_wagerData <- function(df){
+  new_df <- df %>%
+    .clean_wagerData_handicap() %>%
+    .clean_wagerData_hadValue() %>%
+    .clean_wagerData_namePlayer() %>%
+    .clean_wagerData_marketDesc()
+  return(new_df)
+  
+}
+
 .clean_wagerData_handicap <- function(df){
   new_df <- df %>% 
     mutate(
@@ -54,19 +64,11 @@ library(dplyr)
                                             str_replace_all(marketType,
                                                             c('Player X Alt | - Any \\(E-Venue\\)'),
                                                             '')
-                                            )
-        #TRUE ~ 0
+                                            ),
+        TRUE ~ marketType
       )
     )
   return(new_df)
 }
 
-clean_wagerData <- function(df){
-  new_df <- df %>%
-    .clean_wagerData_handicap() %>%
-    .clean_wagerData_hadValue() %>%
-    .clean_wagerData_namePlayer() %>%
-    .clean_wagerData_marketDesc()
-  return(new_df)
-  
-}
+

@@ -16,9 +16,10 @@ source('utils/server/player_prop_history/player_prop_history.R')
 
 options(scipen=999)
 
-
+#sort(unique(wagers_df$marketType))
 #### UDF #########################################
 
+#wagers_df = today_data$wagers_df; game_logs_df = today_data$game_logs_df; schedule_df = today_data$schedule_df; player_df = today_data$player_df; last_n_games = 10
 
 ### Final ####
 pred_wager_edge_df <- function(){

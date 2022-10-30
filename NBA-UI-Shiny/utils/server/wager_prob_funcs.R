@@ -1,9 +1,14 @@
 #https://www.aceodds.com/bet-calculator/odds-converter.html
 
 calc_wager_prob <- function(odds) {
+  if(is.na(odds)){
+    return(0)
+  }
+  
   if(odds == 1){
     odds = .999999
   }
+  
   if(odds > 0){
     value = 100 / (odds + 100)
   }else{
@@ -13,6 +18,10 @@ calc_wager_prob <- function(odds) {
 }
 
 calc_wager_payout <- function(odds){
+  if(is.na(odds)){
+    return(0)
+  }
+  
   if(odds > 0){
     value = 100 * ((1 + (odds / 100)) - 1)
   }else{
@@ -22,6 +31,10 @@ calc_wager_payout <- function(odds){
 }
 
 convert_probs_to_odds <- function(probs){
+  if(is.na(probs)){
+    return(0)
+  }
+  
   if(probs == 1){
     probs = .999999
   }
@@ -35,6 +48,10 @@ convert_probs_to_odds <- function(probs){
 }
 
 convert_odds_to_dec <- function(odds){
+  if(is.na(odds)){
+    return(0)
+  }
+  
   if(odds > 0){
     value = 1 + (odds/100)
     #return((100 - (100*probs)) / probs)

@@ -3,11 +3,11 @@
 get_last_n_games <- function(df,game_logs_df,n=10){
   
   new_df <- df %>%
-    left_join(game_logs_df, by = c('namePlayer' = 'namePlayer')) %>%
-    group_by(idPlayer) %>% 
-    mutate(prevGameNumber = dense_rank(desc(dateGame))
+    dplyr::left_join(game_logs_df, by = c('namePlayer' = 'namePlayer')) %>%
+    dplyr::group_by(idPlayer) %>% 
+    dplyr::mutate(prevGameNumber = dplyr::dense_rank(desc(dateGame))
     ) %>%
-    filter(prevGameNumber <= n) %>%
-    ungroup()
+    dplyr::filter(prevGameNumber <= n) %>%
+    dplyr::ungroup()
   return(new_df)
 }

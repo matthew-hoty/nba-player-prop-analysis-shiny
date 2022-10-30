@@ -19,10 +19,10 @@ table_graph_tab <- fluidRow(
     ),
     
     column(6,
-           sliderInput("oddsRange", 
-                       label = "Odds:",
-                       min = -5000, max = 5000, value = c(-5000, 5000),sep = "",),
-           plotOutput("playerPlot")
+           plotOutput("playerPlot"),
+           div(style = 'overflow-x: scroll', 
+               DT::dataTableOutput("playerDetailsDF")
+            )
     )
 )
 

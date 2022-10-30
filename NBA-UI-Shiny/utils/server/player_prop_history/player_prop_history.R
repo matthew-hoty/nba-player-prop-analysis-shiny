@@ -11,10 +11,12 @@ get_playerProp_history <- function(wagers_df, game_logs_df, schedule_df, player_
     get_last_n_games(game_logs_df,n=last_n_games) %>%
     evaluate_success() %>%
     select(idGame, idTeam, idPlayer, FD_gameId = gameId, FD_marketId = marketId,
-           FD_marketTypeId = marketTypeId, FD_selectionId = selectionId, 
+           #FD_marketTypeId = marketTypeId, 
+           FD_selectionId = selectionId, 
            gameStartDate, gameDesc, marketName, marketType, slugTeam,idTeam, namePlayer,
            currentHandicap, value, hadvalue, wagerType, marketDesc,
-           dateGame, prevGameNumber, success_weight, success, target, pts, treb,ast,fg3m, 
+           dateGame, slugMatchup, prevGameNumber, success_weight, success, target, 
+           pts, treb,ast,fgm,fga,fta,ftm,fg3a,fg3m, minutes,
            urlPlayerHeadshot, urlTeamSeasonLogo, slugOppLoc
     )
   

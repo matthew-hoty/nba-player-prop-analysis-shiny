@@ -30,9 +30,8 @@ shinyServer(function(input, output) {
     })
     
     output$edgeDF <- DT::renderDataTable({
-        print(input$oddsRange)
         edge_df %>%
-            filter(Odds >= input$oddsRange[1] & Odds <= input$oddsRange[2]) %>%
+            #filter(Odds >= input$oddsRange[1] & Odds <= input$oddsRange[2]) %>%
             ungroup() %>%
             select(`Market`,
                     `Odds`, 
@@ -42,5 +41,22 @@ shinyServer(function(input, output) {
         },
         selection = 'single'
     )
+    
+    output$playerDetailsDF <- DT::renderDataTable({
+        if(is.null(input$edgeDF_rows_selected)){
+            input_row <- 1
+        } else {
+            input_row <- input$edgeDF_rows_selected
+        }
+        print(input$edgeDF_rows_selected)
+        selected_row <- edge_df[input_row,]
+        player_summary_df <- player_prop_hist_df %>%
+            filter(namePlayer %in% selected_row$Player &
+                       marketName %in% selected_row$Wager &
+                       marketDesc %in% selected_row$Market
+            ) %>%
+            select(dateGame, slugMatchup, minutes, pts, treb,ast,fgm,fga,fta,ftm,fg3m,fg3a)
+        player_summary_df
+    }, options = list(searching = FALSE,paging = FALSE), selection = 'none')
 
 })

@@ -1,4 +1,22 @@
+library(stringr)
 #### Evaluate Success ####
+#df <- player_prop_hist_df
+
+evaluate_success <- function(df){
+  new_df <- df %>%
+    .define_target() %>%
+    mutate(
+      success = ifelse(hadvalue=='OVER', 
+                       ifelse(target >= currentHandicap, 1, 0),
+                       ifelse(target <= currentHandicap, 1, 0)
+      ),
+      success_weight = .calc_recency_adj(prevGameNumber) * success
+    ) %>%
+    .filter_nas()
+  return(new_df)
+}
+
+
 .filter_nas <- function(df){
   new_df <- df %>%
     filter(!is.na(currentHandicap)) %>%
@@ -12,7 +30,9 @@
       target = case_when(
         marketType %like any% c('To Score X Points%',
                                 'Player X Total Points O/U%',
-                                'Player X Alt Total Points%') ~ pts, 
+                                'Player X Alt Total Points%',
+                                'PLAYER_.*_TOTAL_POINTS'
+                                ) ~ pts, 
         
         marketType %like any% c('To Record X Assists%', 
                                 "Player X Total Assists O/U%",
@@ -46,21 +66,8 @@
 
 .calc_recency_adj <- function(gameNum){
   sigmoid = function(x) {
-    1 / (1 + exp(x-8))
+    1 / (1 + exp(x-9.75))
   }
   return(sigmoid(gameNum))
 }
 
-evaluate_success <- function(df){
-  new_df <- df %>%
-    .define_target() %>%
-    mutate(
-      success = ifelse(hadvalue=='O', 
-                       ifelse(target >= currentHandicap, 1, 0),
-                       ifelse(target <= currentHandicap, 1, 0)
-      ),
-      success_weight = .calc_recency_adj(prevGameNumber) * success
-    ) %>%
-    .filter_nas()
-  return(new_df)
-}
